@@ -66,7 +66,7 @@ Thread: ${input.email_thread}
     .handler(async ({ input }) => {
       const prompt = `
 You are an AI email assistant. Write a polite, clear, and professional reply
-based on this email thread.
+based on thxis email thread.
 
 Subject: ${input.subject}
 From: ${input.author}
@@ -75,12 +75,17 @@ Thread:
 ${input.email_thread}
 `;
 
+      // ✅ Generate a streaming response
       const response = await streamText({
         model,
         messages: [{ role: "user", content: prompt }],
       });
 
-      // ⚡ Returns a streaming-compatible response
-      return response.toTextStreamResponse();
+      // ✅ Return JSON instead of stream
+      const { text } = await response;
+      return { reply: await text };
+
+      // ✅ Return the response as a web-stream (instead of plain JSON)
+      //return response.toTextStreamResponse();
     }),
 });
