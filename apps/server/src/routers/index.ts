@@ -1,25 +1,21 @@
-import { z } from "zod";
-import { o, protectedProcedure, publicProcedure } from "../lib/orpc";
+import { o, protectedProcedure, publicProcedure } from "@/lib/orpc";
 import type { RouterClient } from "@orpc/server";
+import { z } from "zod";
+import { emailAssistantRouter } from "./email-assistant";
 
-// Define the router
 export const appRouter = o.router({
-  // 🔹 Public endpoint: simple health check
   healthCheck: publicProcedure
     .input(z.object({ email: z.string().email() }))
-    .handler((ctx) => {
-      return { email: ctx.input.email };
-    }),
+    .handler((ctx) => ({ email: ctx.input.email })),
 
-  // 🔹 Protected endpoint: requires authentication
-  privateData: protectedProcedure.handler((ctx) => {
-    return {
-      message: "This is private",
-      user: ctx.context.session?.user, // available only after auth
-    };
-  }),
+  privateData: protectedProcedure.handler((ctx) => ({
+    message: "This is private",
+    user: ctx.context.session?.user,
+  })),
+
+  // ✅ Mount email assistant
+  emailAssistant: emailAssistantRouter,
 });
 
-// 🔹 Export type-safe client types
 export type AppRouter = typeof appRouter;
 export type AppRouterClient = RouterClient<typeof appRouter>;
