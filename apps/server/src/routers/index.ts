@@ -3,11 +3,11 @@ import { protectedProcedure, publicProcedure } from "../lib/orpc";
 import type { RouterClient } from "@orpc/server";
 
 export const appRouter = {
-	healthCheck: publicProcedure.input(z.object({email: z.email()})).handler(({
+	healthCheck: publicProcedure.input(z.object({name: z.string()})).handler(({
 		input
 	}) => {
 
-		return {"name": input.email};
+		return {"name": input.name};
 	}),
 	privateData: protectedProcedure.handler(({ context }) => {
 		return {
