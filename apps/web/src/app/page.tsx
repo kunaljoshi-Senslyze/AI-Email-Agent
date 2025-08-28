@@ -21,7 +21,7 @@ const TITLE_TEXT = `
 export default function Home() {
 	// const healthCheck = useQuery(orpc.healthCheck.queryOptions());
 	const healthCheck = useQuery(orpc.healthCheck.queryOptions({
-		input: {name: "Better T App"}
+		input: {email: ""}
 	}));
 
 	return (
