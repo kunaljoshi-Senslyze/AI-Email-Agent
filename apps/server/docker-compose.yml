@@ -1,19 +1,17 @@
-name: my-better-t-app
-
 services:
   postgres:
     image: postgres
     container_name: my-better-t-app-postgres
     environment:
       POSTGRES_DB: my-better-t-app
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: password
+      POSTGRES_USER: myuser
+      POSTGRES_PASSWORD: mypass 
     ports:
       - "5432:5432"
     volumes:
       - my-better-t-app_postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: ["CMD-SHELL", "pg_isready -U myuser -d my-better-t-app"]
       interval: 10s
       timeout: 5s
       retries: 5

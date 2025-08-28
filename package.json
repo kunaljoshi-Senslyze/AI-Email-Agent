@@ -22,7 +22,11 @@
 		"db:stop": "turbo -F server db:stop",
 		"db:down": "turbo -F server db:down"
 	},
-	"dependencies": {},
+	"dependencies": {
+		"@ai-sdk/google": "^2.0.11",
+		"ai": "^5.0.26",
+		"llm": "^1.0.7"
+	},
 	"devDependencies": {
 		"turbo": "^2.5.4",
 		"@biomejs/biome": "^2.2.0"
