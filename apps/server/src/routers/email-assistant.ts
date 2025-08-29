@@ -19,16 +19,16 @@ interface EmailState {
   reply?: string;
   notification?: string;
 }
-// output schema for processEmail function
+
 const ProcessEmailResultSchema = z.object({
   classification: z.enum(["respond", "ignore", "notify"]).optional(),
   reply: z.string().optional(),
   notification: z.string().optional(),
 });
 
+// ----------------- NODES -----------------
 type EmailNodeFunction = (state: EmailState) => Promise<Partial<EmailState>>;
 
-// ----------------- NODES -----------------
 const triageNode: EmailNodeFunction = async (state) => {
   const systemPrompt = `
 You are an email triage assistant. Decide if an email should be:
@@ -87,6 +87,7 @@ Subject: ${state.subject}
 From: ${state.author}
 To: ${state.to}
 Thread: ${state.email_thread}
+also give output without # , * in it like formatted text 
 `;
 
   const response = await streamText({
@@ -128,6 +129,7 @@ const emailWorkflow = workflow.compile();
 
 // ----------------- ORPC ROUTER -----------------
 export const emailAssistantRouter = o.router({
+  // Step 1: Process initial email
   processEmail: publicProcedure
     .input(
       z.object({
@@ -141,5 +143,45 @@ export const emailAssistantRouter = o.router({
     .handler(async ({ input }) => {
       const result = await emailWorkflow.invoke(input);
       return result;
+    }),
+
+  // Step 2: Refine reply (HITL support)
+  refineReply: publicProcedure
+    .input(
+      z.object({
+        originalReply: z.string(),
+        editedReply: z.string(),
+        author: z.string(),
+        to: z.string(),
+        subject: z.string(),
+        email_thread: z.string(),
+      })
+    )
+    .output(z.object({ refinedReply: z.string() }))
+    .handler(async ({ input }) => {
+      const prompt = `
+The AI originally suggested this reply:
+"${input.originalReply}"
+
+A human edited it to:
+"${input.editedReply}"
+
+Context:
+Subject: ${input.subject}
+From: ${input.author}
+To: ${input.to}
+Thread: ${input.email_thread}
+
+Task:
+Refine the human-edited reply into a polished, professional, and context-aware email response.
+Keep it concise and polite.
+`;
+
+      const response = await streamText({
+        model,
+        messages: [{ role: "user", content: prompt }],
+      });
+
+      return { refinedReply: await response.text };
     }),
 });
