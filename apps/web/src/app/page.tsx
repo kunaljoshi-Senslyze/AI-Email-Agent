@@ -7,6 +7,7 @@ import { orpc } from "@/utils/orpc";
 const TITLE_TEXT = `
 # Email AI-ssistant
 `;
+
 interface ProcessEmailResult {
   classification?: "respond" | "ignore" | "notify";
   reply?: string;
@@ -20,13 +21,6 @@ export default function Home() {
   const [subject, setSubject] = useState<string>("");
   const [emailThread, setEmailThread] = useState<string>("");
 
-  // ✅ Query: API Health (only when user email is provided)
-  const healthCheck = useQuery({
-    ...orpc.healthCheck.queryOptions({
-      input: { email: author },
-    }),
-    enabled: Boolean(author && author.includes("@")), // Only run when valid email is entered
-  });
 
   // ✅ Single workflow mutation
   const processEmailMutation = useMutation<ProcessEmailResult, Error, {
@@ -86,25 +80,12 @@ John`);
       to && 
       subject && 
       emailThread &&
-      Boolean(healthCheck.data)&&
       !processEmailMutation.isPending
     );
   };
 
-  const getStatusColor = (): string => {
-    if (!author || !isValidEmail(author)) return "bg-gray-400";
-    if (healthCheck.isLoading) return "bg-yellow-500";
-    if (healthCheck.data) return "bg-green-500";
-    return "bg-red-500";
-  };
 
-  const getStatusText = (): string => {
-    if (!author || !isValidEmail(author)) return "Enter your email to check connection";
-    if (healthCheck.isLoading) return "Checking...";
-    if (healthCheck.data) return "Connected";
-    return "Disconnected";
-  };
-
+  // Clipboard copy utility
   const copyToClipboard = async (text: string): Promise<void> => {
     try {
       await navigator.clipboard.writeText(text);
@@ -128,17 +109,6 @@ John`);
     <div className="container mx-auto max-w-4xl px-4 py-2">
       <pre className="overflow-x-auto font-mono text-sm mb-6">{TITLE_TEXT}</pre>
 
-      <div className="grid gap-6">
-        {/* ✅ API Status */}
-        <section className="rounded-lg border p-4 shadow-sm">
-          <h2 className="mb-2 font-medium">API Status</h2>
-          <div className="flex items-center gap-2">
-            <div className={`h-2 w-2 rounded-full ${getStatusColor()}`} />
-            <span className="text-sm text-muted-foreground">
-              {getStatusText()}
-            </span>
-          </div>
-        </section>
 
         {/* ✅ Email Input */}
         <section className="rounded-lg border p-4 shadow-sm">
@@ -290,6 +260,5 @@ John`);
           )}
         </section>
       </div>
-    </div>
   );
 }
