@@ -7,7 +7,6 @@ import { orpc } from "@/utils/orpc";
 const TITLE_TEXT = `
 # Email AI-ssistant
 `;
-
 interface ProcessEmailResult {
   classification?: "respond" | "ignore" | "notify";
   reply?: string;
